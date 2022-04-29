@@ -1,0 +1,21 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",  
+    "Description" : "Create New SSL certificatie using AWS ACM",  
+    "Parameters" : {
+        "ACMdomainName" : {
+          "Type" : "String",
+          "Default" : "",          
+          "Description" : "Please provide the domain name"
+        }
+    },
+    "Resources" : {
+        "SSLCert" : {
+            "Type" : "AWS::CertificateManager::Certificate",    
+            "Properties" : {        
+                "DomainName" : {"Ref": "ACMdomainName"},                             
+                "ValidationMethod" : "DNS"
+            }
+        }        
+    }    
+}
+  
