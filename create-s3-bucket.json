@@ -1,0 +1,64 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+  
+    "Description" : "AWS CloudFormation Template to create a publicly accessible S3 bucket configured for website access with a deletion policy of retain on delete.",
+  
+    "Resources" : {
+      "S3Bucket" : {
+        "Type" : "AWS::S3::Bucket",
+        "Properties" : {
+          "AccessControl" : "PublicRead",
+          "WebsiteConfiguration" : {
+            "IndexDocument" : "index.html",
+            "ErrorDocument" : "index.html"
+           },
+           "PolicyDocument" : {
+                "SampleBucketPolicy": {
+                    "Type": "AWS::S3::BucketPolicy",
+                    "Properties": {
+                        "Bucket": {
+                            "Ref": "S3Bucket"
+                        },
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Action": [
+                                        "s3:GetObject"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": {
+                                        "Fn::Join": [
+                                            "",
+                                            [
+                                                "arn:aws:s3:::",
+                                                {
+                                                    "Ref": "S3Bucket"
+                                                },
+                                                "/*"
+                                            ]
+                                        ]
+                                    },
+                                    "Principal": "*"                                    
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "DeletionPolicy" : "Retain"
+      }
+    },
+  
+    "Outputs" : {
+      "WebsiteURL" : {
+        "Value" : { "Fn::GetAtt" : [ "S3Bucket", "WebsiteURL" ] },
+        "Description" : "URL for website hosted on S3"
+      },
+      "S3BucketSecureURL" : {
+        "Value" : { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "S3Bucket", "DomainName" ] } ] ] },
+        "Description" : "Name of S3 bucket to hold website content"
+      }
+    }
+  }
