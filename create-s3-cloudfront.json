@@ -1,0 +1,93 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+  
+    "Description" : "AWS CloudFormation Template to create a publicly accessible S3 bucket configured for website access with a deletion policy of retain on delete.",
+  
+    "Resources" : {
+      "NewS3Bucket" : {
+        "Type" : "AWS::S3::Bucket",
+        "Properties" : {
+          "AccessControl" : "PublicRead",
+          "WebsiteConfiguration" : {
+            "IndexDocument" : "index.html",
+            "ErrorDocument" : "index.html"
+           }
+          },
+          "DeletionPolicy" : "Retain"  
+        },        
+        "SampleBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+                "Bucket": {
+                    "Ref": "NewS3Bucket"
+                },
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Action": [
+                                "s3:GetObject"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        "arn:aws:s3:::",
+                                        {
+                                            "Ref": "NewS3Bucket"
+                                        },
+                                        "/*"
+                                    ]
+                                ]
+                            },
+                            "Principal": "*"                                    
+                        }
+                    ]
+                }
+            }
+        },
+        "myDistribution" : {
+          "Type" : "AWS::CloudFront::Distribution",
+          "Properties" : {
+              "DistributionConfig" : {
+                  "Origins" : [ {
+                      "DomainName" : {"Fn::Join": [ "", [{"Ref": "NewS3Bucket"}, ".s3.amazonaws.com"] ] }, 
+                      "Id" : "myS3Origin",
+                      "CustomOriginConfig":{
+                        "HTTPPort" : 80,
+                        "HTTPSPort" : 443,
+                        "OriginProtocolPolicy": "http-only"                       
+                      }                  
+                  }],
+                  "Enabled" : "true",
+                  "Comment" : "awswithatiq",
+                  "DefaultRootObject" : "index.html",
+                  "DefaultCacheBehavior" : {
+                      "AllowedMethods" : [ "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT" ],  
+                      "TargetOriginId" : "myS3Origin",
+                      "ForwardedValues" : {
+                          "QueryString" : "false",
+                          "Cookies" : { "Forward" : "none" }
+                      },
+                      "Compress":"true",
+                      "ViewerProtocolPolicy" : "allow-all"
+                  },                 
+                 "ViewerCertificate" : { "CloudFrontDefaultCertificate" : "true" }  
+              }
+          },
+          "DependsOn" : "NewS3Bucket"
+      }      
+    },
+  
+    "Outputs" : {
+      "WebsiteURL" : {
+        "Value" : { "Fn::GetAtt" : [ "NewS3Bucket", "WebsiteURL" ] },
+        "Description" : "URL for website hosted on S3"
+      },
+      "S3BucketSecureURL" : {
+        "Value" : { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "NewS3Bucket", "DomainName" ] } ] ] },
+        "Description" : "Name of S3 bucket to hold website content"
+      }
+    }
+  }
