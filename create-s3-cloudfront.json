@@ -52,7 +52,7 @@
           "Properties" : {
               "DistributionConfig" : {
                   "Origins" : [ {
-                      "DomainName" : {"Fn::Join": [ "", [{"Ref": "NewS3Bucket"}, ".s3.amazonaws.com"] ] }, 
+                      "DomainName" : {"Fn::Join": [ "", [{"Ref": "NewS3Bucket"}, ".s3." , {"Ref": "AWS::Region"}, ".amazonaws.com"] ] }, 
                       "Id" : "myS3Origin",
                       "CustomOriginConfig":{
                         "HTTPPort" : 80,
@@ -71,7 +71,7 @@
                           "Cookies" : { "Forward" : "none" }
                       },
                       "Compress":"true",
-                      "ViewerProtocolPolicy" : "allow-all"
+                      "ViewerProtocolPolicy" : "redirect-to-https"
                   },                 
                  "ViewerCertificate" : { "CloudFrontDefaultCertificate" : "true" }  
               }
