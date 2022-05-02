@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources: 
+  newEC2Instance:
+    Type: AWS::EC2::Instance
+    DeletionPolicy: Retain
+    Properties:
+      InstanceType: t3.micro
+      ImageId: ami-08569b978cc4dfa10
+  MyEIP:
+    Type: AWS::EC2::EIP
+    DeletionPolicy: Retain
+    Properties:
+      InstanceId: !Ref newEC2Instance
