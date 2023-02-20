@@ -1,0 +1,39 @@
+Parameters:
+  DomainName:
+    Type: String
+    Description: Enter the domain name for the Amplify app
+    Default: example.com
+  CodeCommitRepo:
+    Type: String
+    Description: Enter the name of the CodeCommit repository to use as source code
+  CodeCommitBranch:
+    Type: String
+    Description: Enter the name of the branch in the CodeCommit repository to use as source code
+    Default: main
+
+Resources:
+  AmplifyApp:
+    Type: AWS::Amplify::App
+    Properties:
+      Name: !Join ["-", [!Ref DomainName, "amplify-app"]]
+      Repository: !Sub "https://git-codecommit.${AWS::Region}.amazonaws.com/v1/repos/${CodeCommitRepo}"
+      OauthToken: "unused" # required, but unused
+
+  AmplifyBranch:
+    Type: AWS::Amplify::Branch
+    Properties:
+      AppId: !Ref AmplifyApp
+      BranchName: !Ref CodeCommitBranch
+      EnableAutoBuild: true
+      EnablePullRequestPreview: false
+
+  AmplifyDomain:
+    Type: AWS::Amplify::Domain
+    Properties:
+      AppId: !Ref AmplifyApp
+      DomainName: !Ref DomainName
+      SubDomainSettings:
+        - Prefix: www
+          BranchName: !Ref CodeCommitBranch
+        - Prefix: '*'
+          BranchName: !Ref CodeCommitBranch
